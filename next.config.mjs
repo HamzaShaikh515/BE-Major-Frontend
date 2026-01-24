@@ -1,11 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  reactStrictMode: true,
+  swcMinify: true,
+  
+  // Enable standalone output for Docker
+  output: 'standalone',
+  
+  // Images configuration
   images: {
-    unoptimized: true,
+    domains: ['localhost'],
+    unoptimized: true, // For development
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;
