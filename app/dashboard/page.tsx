@@ -9,8 +9,8 @@ const MapView = dynamic(() => import('./MapView'), {
 
 export default function Dashboard() {
   const [coords, setCoords] = useState({
-    lat: 19.2625,
-    lon: 72.9680
+    lat: 19.271322,
+    lon: 72.96894
   });
   const [radius, setRadius] = useState(1500);
   const [result, setResult] = useState<any>(null);
@@ -125,8 +125,8 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between bg-gray-700/50 rounded-lg px-4 py-3">
                   <span className="text-sm text-gray-300">Active Mode:</span>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${inputMode === 'manual'
-                      ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50'
-                      : 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
+                    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50'
+                    : 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
                     }`}>
                     {inputMode === 'manual' ? '🎯 Manual' : '🖊️ Polygon'}
                   </span>
@@ -303,8 +303,8 @@ export default function Dashboard() {
                   <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/30 rounded-lg p-4">
                     <div className="text-sm text-gray-400 mb-1">Risk Level</div>
                     <div className={`text-2xl font-bold inline-block px-4 py-2 rounded-lg ${result.risk_level === 'High' ? 'bg-red-500/20 text-red-300' :
-                        result.risk_level === 'Medium' ? 'bg-yellow-500/20 text-yellow-300' :
-                          'bg-green-500/20 text-green-300'
+                      result.risk_level === 'Medium' ? 'bg-yellow-500/20 text-yellow-300' :
+                        'bg-green-500/20 text-green-300'
                       }`}>
                       {result.risk_level}
                     </div>
