@@ -90,6 +90,35 @@ export default function Dashboard() {
     setMapKey(prev => prev + 1);
   };
 
+  const downloadReport = async () => {
+    if (!result?.report_id) return;
+
+    try {
+      const res = await fetch(
+        `http://127.0.0.1:8000/report/${result.report_id}`
+      );
+
+      if (!res.ok) {
+        alert("Failed to download report.");
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `urbaneye_report_${result.report_id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err) {
+      console.error(err);
+      alert("Error downloading report.");
+    }
+  };
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-gray-900">
 
@@ -309,6 +338,30 @@ export default function Dashboard() {
                       {result.risk_level}
                     </div>
                   </div>
+
+                  {result && (
+                    <div className="bg-gradient-to-br from-gray-800 to-gray-850 ...">
+                      <button
+                        onClick={downloadReport}
+                        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                          />
+                        </svg>
+                        Download PDF Report
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
