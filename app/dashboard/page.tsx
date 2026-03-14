@@ -7,7 +7,7 @@ const MapView = dynamic(() => import('./MapView'), {
   ssr: false
 });
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 type JobStatus = 'queued' | 'processing' | 'completed' | 'failed';
 
@@ -115,25 +115,25 @@ export default function Dashboard() {
 
     const body = polygon
       ? {
-          polygon,
-          lat: null,
-          lon: null,
-          radius: null,
-          date1_start: date1Start,
-          date1_end: date1End,
-          date2_start: date2Start,
-          date2_end: date2End,
-        }
+        polygon,
+        lat: null,
+        lon: null,
+        radius: null,
+        date1_start: date1Start,
+        date1_end: date1End,
+        date2_start: date2Start,
+        date2_end: date2End,
+      }
       : {
-          polygon: null,
-          lat: coords.lat,
-          lon: coords.lon,
-          radius,
-          date1_start: date1Start,
-          date1_end: date1End,
-          date2_start: date2Start,
-          date2_end: date2End,
-        };
+        polygon: null,
+        lat: coords.lat,
+        lon: coords.lon,
+        radius,
+        date1_start: date1Start,
+        date1_end: date1End,
+        date2_start: date2Start,
+        date2_end: date2End,
+      };
 
     try {
       const res = await fetch(`${API_BASE}/analyze`, {
@@ -214,10 +214,10 @@ export default function Dashboard() {
 
   // --- Status badge helpers ---
   const statusConfig: Record<JobStatus, { color: string; icon: string; label: string }> = {
-    queued:     { color: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50', icon: '⏳', label: 'Job Queued' },
-    processing: { color: 'bg-blue-500/20 text-blue-300 border-blue-500/50',   icon: '⚙️', label: 'Processing…' },
-    completed:  { color: 'bg-green-500/20 text-green-300 border-green-500/50', icon: '✅', label: 'Completed' },
-    failed:     { color: 'bg-red-500/20 text-red-300 border-red-500/50',       icon: '❌', label: 'Failed' },
+    queued: { color: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50', icon: '⏳', label: 'Job Queued' },
+    processing: { color: 'bg-blue-500/20 text-blue-300 border-blue-500/50', icon: '⚙️', label: 'Processing…' },
+    completed: { color: 'bg-green-500/20 text-green-300 border-green-500/50', icon: '✅', label: 'Completed' },
+    failed: { color: 'bg-red-500/20 text-red-300 border-red-500/50', icon: '❌', label: 'Failed' },
   };
 
   return (
@@ -251,11 +251,10 @@ export default function Dashboard() {
                 {/* Mode Indicator */}
                 <div className="flex items-center justify-between bg-gray-700/50 rounded-lg px-4 py-3">
                   <span className="text-sm text-gray-300">Active Mode:</span>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    inputMode === 'manual'
-                      ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50'
-                      : 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
-                  }`}>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${inputMode === 'manual'
+                    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50'
+                    : 'bg-purple-500/20 text-purple-300 border border-purple-500/50'
+                    }`}>
                     {inputMode === 'manual' ? '🎯 Manual' : '🖊️ Polygon'}
                   </span>
                 </div>
@@ -447,11 +446,10 @@ export default function Dashboard() {
                   </div>
                   <div className="bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/30 rounded-lg p-4">
                     <div className="text-sm text-gray-400 mb-1">Risk Level</div>
-                    <div className={`text-2xl font-bold inline-block px-4 py-2 rounded-lg ${
-                      result.risk_level === 'High' ? 'bg-red-500/20 text-red-300' :
+                    <div className={`text-2xl font-bold inline-block px-4 py-2 rounded-lg ${result.risk_level === 'High' ? 'bg-red-500/20 text-red-300' :
                       result.risk_level === 'Medium' ? 'bg-yellow-500/20 text-yellow-300' :
-                      'bg-green-500/20 text-green-300'
-                    }`}>
+                        'bg-green-500/20 text-green-300'
+                      }`}>
                       {result.risk_level}
                     </div>
                   </div>
