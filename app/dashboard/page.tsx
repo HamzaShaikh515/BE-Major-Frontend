@@ -46,11 +46,27 @@ export default function Dashboard() {
   const [polygon, setPolygon] = useState<GeoJSONPolygon | null>(null);
   const [inputMode, setInputMode] = useState<'manual' | 'polygon'>('manual');
   const [mapKey, setMapKey] = useState(0);
+  const [locationName, setLocationName] = useState<string>('Kasarvadali, Thane, Maharashtra, India');
 
   // Job tracking state
   const [job, setJob] = useState<JobState | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Reverse geocode to get location name from coordinates
+  const getLocationName = async (lat: number, lon: number) => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+      );
+      const data = await response.json();
+      if (data.display_name) {
+        setLocationName(data.display_name);
+      }
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+    }
+  };
 
   // --- Polling logic ---
   const stopPolling = useCallback(() => {
@@ -168,6 +184,7 @@ export default function Dashboard() {
     setPolygon(null);
     setInputMode('manual');
     setMapKey(prev => prev + 1);
+    getLocationName(newCoords.lat, newCoords.lon);
   };
 
   const handlePolygonChange = (newPolygon: GeoJSONPolygon | null) => {
@@ -180,16 +197,22 @@ export default function Dashboard() {
       const centerLat = lats.reduce((a, b) => a + b, 0) / lats.length;
       const centerLon = lons.reduce((a, b) => a + b, 0) / lons.length;
       setCoords({ lat: centerLat, lon: centerLon });
+      getLocationName(centerLat, centerLon);
     } else {
       setInputMode('manual');
     }
   };
 
-  const handleSearchLocationChange = (newLat: number, newLon: number) => {
+  const handleSearchLocationChange = (newLat: number, newLon: number, name?: string) => {
     setCoords({ lat: newLat, lon: newLon });
     setPolygon(null);
     setInputMode('manual');
     setMapKey(prev => prev + 1);
+    if (name) {
+      setLocationName(name);
+    } else {
+      getLocationName(newLat, newLon);
+    }
   };
 
   const downloadReport = async () => {
@@ -499,6 +522,29 @@ export default function Dashboard() {
                   setPolygon={handlePolygonChange}
                   onLocationChange={handleSearchLocationChange}
                 />
+              </div>
+
+              {/* Currently Selected Area */}
+              <div className="bg-gradient-to-r from-slate-700/50 to-slate-800/50 px-5 py-4 border-t border-gray-700">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0 mt-1">
+                    <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center">
+                      <span className="text-lg">📍</span>
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-medium text-gray-400 mb-1">Currently Selected Area</div>
+                    <div className="text-sm text-white font-medium break-words">
+                      {locationName}
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      {coords.lat.toFixed(6)}, {coords.lon.toFixed(6)}
+                      {inputMode === 'polygon' && (
+                        <span className="ml-2 text-purple-400">• Custom Polygon</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

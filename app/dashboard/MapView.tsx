@@ -16,11 +16,11 @@ import L from 'leaflet';
 // Component to update map center when coords change
 function MapUpdater({ lat, lon }: { lat: number; lon: number }) {
     const map = useMap();
-    
+
     useEffect(() => {
         map.setView([lat, lon], map.getZoom());
     }, [lat, lon, map]);
-    
+
     return null;
 }
 
@@ -31,7 +31,7 @@ export default function MapView({ result, lat, lon, setPolygon, radius, hasPolyg
     const [isDragging, setIsDragging] = useState(false);
     const [position, setPosition] = useState({ x: 24, y: 24 });
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-    
+
     // Search state
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -84,7 +84,7 @@ export default function MapView({ result, lat, lon, setPolygon, radius, hasPolyg
     // Debounced search
     const handleSearchInput = (value: string) => {
         setSearchQuery(value);
-        
+
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
@@ -103,12 +103,12 @@ export default function MapView({ result, lat, lon, setPolygon, radius, hasPolyg
     const selectLocation = (result: any) => {
         const newLat = parseFloat(result.lat);
         const newLon = parseFloat(result.lon);
-        
-        // Update parent component's coordinates
+
+        // Update parent component's coordinates and location name
         if (onLocationChange) {
-            onLocationChange(newLat, newLon);
+            onLocationChange(newLat, newLon, result.display_name);
         }
-        
+
         // Clear search
         setSearchQuery(result.display_name);
         setShowResults(false);
@@ -129,20 +129,20 @@ export default function MapView({ result, lat, lon, setPolygon, radius, hasPolyg
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!isDragging || !legendRef.current) return;
-            
+
             const parent = legendRef.current.parentElement;
             if (!parent) return;
-            
+
             const parentRect = parent.getBoundingClientRect();
             const legendRect = legendRef.current.getBoundingClientRect();
-            
+
             let newX = e.clientX - parentRect.left - dragOffset.x;
             let newY = e.clientY - parentRect.top - dragOffset.y;
-            
+
             // Constrain to parent bounds
             newX = Math.max(0, Math.min(newX, parentRect.width - legendRect.width));
             newY = Math.max(0, Math.min(newY, parentRect.height - legendRect.height));
-            
+
             setPosition({ x: newX, y: newY });
         };
 
@@ -163,7 +163,7 @@ export default function MapView({ result, lat, lon, setPolygon, radius, hasPolyg
 
     return (
         <div className="rounded-lg overflow-hidden shadow-inner relative">
-            
+
             {/* Search Bar */}
             <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] w-full max-w-md px-4">
                 <div className="relative">
@@ -181,7 +181,7 @@ export default function MapView({ result, lat, lon, setPolygon, radius, hasPolyg
                             </div>
                         )}
                     </div>
-                    
+
                     {/* Search Results Dropdown */}
                     {showResults && searchResults.length > 0 && (
                         <div className="absolute top-full mt-2 w-full bg-white rounded-lg shadow-2xl border border-gray-200 max-h-64 overflow-y-auto">
@@ -206,7 +206,7 @@ export default function MapView({ result, lat, lon, setPolygon, radius, hasPolyg
                             ))}
                         </div>
                     )}
-                    
+
                     {/* No Results */}
                     {showResults && searchResults.length === 0 && !isSearching && searchQuery.trim() && (
                         <div className="absolute top-full mt-2 w-full bg-white rounded-lg shadow-2xl border border-gray-200 px-4 py-3">
@@ -225,7 +225,7 @@ export default function MapView({ result, lat, lon, setPolygon, radius, hasPolyg
                 className="rounded-lg"
             >
                 <MapUpdater lat={lat} lon={lon} />
-                
+
                 <LayersControl position="topright">
 
                     <LayersControl.BaseLayer checked name="🗺️ OpenStreetMap">
@@ -308,9 +308,8 @@ export default function MapView({ result, lat, lon, setPolygon, radius, hasPolyg
             {result && (
                 <div
                     ref={legendRef}
-                    className={`absolute z-[1000] bg-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-2xl px-4 py-3 min-w-[280px] ${
-                        isDragging ? 'cursor-grabbing' : 'cursor-grab'
-                    }`}
+                    className={`absolute z-[1000] bg-gray-900/95 backdrop-blur-sm border border-gray-700 rounded-lg shadow-2xl px-4 py-3 min-w-[280px] ${isDragging ? 'cursor-grabbing' : 'cursor-grab'
+                        }`}
                     style={{
                         left: `${position.x}px`,
                         top: `${position.y}px`,

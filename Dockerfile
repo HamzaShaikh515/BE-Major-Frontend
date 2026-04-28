@@ -1,52 +1,62 @@
-# Stage 1: Dependencies
-FROM node:18-alpine AS deps
+# ─────────────────────────────────────────────────────────────
+# Stage 1 – deps
+# ─────────────────────────────────────────────────────────────
+FROM node:20-slim AS deps
+
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json ./
+# Copy only dependency files first (better caching)
+COPY package.json package-lock.json .npmrc ./
 
 # Install dependencies
-RUN npm ci --legacy-peer-deps
+RUN npm ci
 
-# Stage 2: Builder
-FROM node:18-alpine AS builder
+# ─────────────────────────────────────────────────────────────
+# Stage 2 – builder
+# ─────────────────────────────────────────────────────────────
+FROM node:20-slim AS builder
+
 WORKDIR /app
 
-# Copy dependencies from deps stage
+# Reuse node_modules
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy source code
+# Copy source
 COPY . .
 
-# Set environment variable for build
-ENV NEXT_TELEMETRY_DISABLED 1
+# Build-time env (important for Next.js)
+ARG NEXT_PUBLIC_API_URL=https://urbaneye-gee-production.up.railway.app
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
-# Build the application
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+# Build app
 RUN npm run build
 
-# Stage 3: Runner
-FROM node:18-alpine AS runner
+# ─────────────────────────────────────────────────────────────
+# Stage 3 – runner
+# ─────────────────────────────────────────────────────────────
+FROM node:20-slim AS runner
+
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
 # Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN groupadd --system --gid 1001 nodejs \
+    && useradd  --system --uid 1001 nextjs
 
-# Copy built application
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
-# Set permissions
-RUN chown -R nextjs:nodejs /app
+# Copy only required files
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 
 EXPOSE 3000
-
-ENV PORT 3000
 
 CMD ["node", "server.js"]
